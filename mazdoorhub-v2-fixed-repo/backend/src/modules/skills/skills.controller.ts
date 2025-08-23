@@ -1,0 +1,1 @@
+import { Controller, Get } from '@nestjs/common'; import { DataSource } from 'typeorm'; @Controller('v1/skills') export class SkillsController { constructor(private ds: DataSource) {} @Get() async list(){ return this.ds.query('SELECT id, name FROM skills ORDER BY name ASC'); } }

@@ -1,0 +1,1 @@
+import { Injectable } from '@nestjs/common'; @Injectable() export class S3Service { async presignPut(key:string, contentType:string){ return { url:`https://example-r2.local/upload/${encodeURIComponent(key)}`, key }; } }

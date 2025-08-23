@@ -1,0 +1,1 @@
+import { Module } from '@nestjs/common'; import { SocialAuthController } from './auth.controller'; @Module({ controllers: [SocialAuthController] }) export class AuthModule {}

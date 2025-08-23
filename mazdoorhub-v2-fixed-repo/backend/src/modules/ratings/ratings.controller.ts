@@ -1,0 +1,1 @@
+import { Controller, Post, Get, Body, Query } from '@nestjs/common'; import { RatingsService } from './ratings.service'; @Controller('v1/ratings') export class RatingsController { constructor(private svc: RatingsService) {} @Post() create(@Body() body: any) { return this.svc.create(body); } @Get() list(@Query('job_id') jobId: string) { return this.svc.byJob(jobId); } }

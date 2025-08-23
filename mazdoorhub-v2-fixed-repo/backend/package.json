@@ -1,0 +1,32 @@
+{
+  "name": "mazdoorhub-backend",
+  "version": "2.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "start:dev": "ts-node-dev --respawn src/main.ts",
+    "typeorm:run": "ts-node src/scripts/migrate.ts",
+    "seed": "node dist/scripts/seed.js",
+    "nightly": "node dist/scripts/nightly.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.3.0",
+    "@nestjs/core": "^10.3.0",
+    "@nestjs/platform-express": "^10.3.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "dotenv": "^16.4.0",
+    "ioredis": "^5.3.2",
+    "pg": "^8.11.3",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.20",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.2"
+  }
+}

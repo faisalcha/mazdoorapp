@@ -1,1 +1,21 @@
-import { Injectable } from '@nestjs/common'; import Redis from 'ioredis'; @Injectable() export class RedisService { client: any; constructor(){ this.client = new Redis({ host: process.env.REDIS_HOST || 'redis', port: Number(process.env.REDIS_PORT||6379) }); } async softLockJob(jobId:string, workerId:string, ttlMs=90000){ const key=`job:${jobId}:softlock`; const res = await this.client.set(key, workerId, 'PX', ttlMs, 'NX'); return res==='OK'; } async softLockInfo(jobId:string){ const key=`job:${jobId}:softlock`; return this.client.get(key); } }
+import { Injectable } from "@nestjs/common";
+import Redis from "ioredis";
+@Injectable()
+export class RedisService {
+  client: any;
+  constructor() {
+    this.client = new Redis({
+      host: process.env.REDIS_HOST || "redis",
+      port: Number(process.env.REDIS_PORT || 6379),
+    });
+  }
+  async softLockJob(jobId: string, workerId: string, ttlMs = 90000) {
+    const key = `job:${jobId}:softlock`;
+    const res = await this.client.set(key, workerId, "PX", ttlMs, "NX");
+    return res === "OK";
+  }
+  async softLockInfo(jobId: string) {
+    const key = `job:${jobId}:softlock`;
+    return this.client.get(key);
+  }
+}

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body, Param, NotFoundException } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { DataSource } from 'typeorm';
 import { RedisService } from '../../integrations/redis.service';
@@ -24,7 +24,7 @@ export class JobsController {
                WHERE j.id = $1`;
     const rows = await this.ds.query(q, [id]);
     const r = rows[0];
-    if (!r) throw new Error('Job not found');
+    if (!r) throw new NotFoundException('Job not found');
     return { status: r.status, worker: r.accepted_worker_id ? { id: r.accepted_worker_id, lat: r.lat, lon: r.lon } : null };
   }
 

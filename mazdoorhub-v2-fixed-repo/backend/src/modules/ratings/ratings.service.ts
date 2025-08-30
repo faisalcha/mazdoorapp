@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Rating } from './rating.entity';
@@ -7,7 +7,8 @@ import { DataSource } from 'typeorm';
 export class RatingsService {
   constructor(@InjectRepository(Rating) private repo: Repository<Rating>, private ds: DataSource) {}
   async create(data: Partial<Rating>) {
-    if (!data.score || data.score < 1 || data.score > 5) throw new Error('Score must be 1-5');
+    if (!data.score || data.score < 1 || data.score > 5)
+      throw new BadRequestException('Score must be 1-5');
     const saved = await this.repo.save(this.repo.create(data));
     const job = await this.ds.query('SELECT employer_id, accepted_worker_id FROM jobs WHERE id=$1', [data.job_id]);
     if (job[0] && data.rater_id === job[0].employer_id && data.ratee_id === job[0].accepted_worker_id) {

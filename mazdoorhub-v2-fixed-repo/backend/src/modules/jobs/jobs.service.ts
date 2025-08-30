@@ -97,12 +97,23 @@ export class JobsService {
     const job = jb[0];
     const labor = Number(job?.budget_amount || 0);
     const material = Number(job?.material_amount || 0);
-    const holdTotal = Number(amount || labor + material);
+    const holdTotal = Number(amount ?? (labor + material));
 
-    const up = await this.data.query('UPDATE jobs SET status=$2, accepted_worker_id=$3 WHERE id=$1 RETURNING *', [id, 'accepted', worker_id]);
-    await this.data.query('INSERT INTO escrows (job_id, employer_id, worker_id, hold_amount, material_hold_amount, status) VALUES ($1,$2,$3,$4,$5,\'held\')', [id, employer_id, worker_id, holdTotal - material, material]);
-    await this.data.query('INSERT INTO ledgers (user_id, job_id, type, amount, meta) VALUES ($1,$2,\'escrow_hold\',$3,$4)', [employer_id, id, -(holdTotal), JSON.stringify({note:'employer hold', labor, material})]);
-    return up[0];
+    const queryRunner = this.data.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const up = await queryRunner.query('UPDATE jobs SET status=$2, accepted_worker_id=$3 WHERE id=$1 RETURNING *', [id, 'accepted', worker_id]);
+      await queryRunner.query('INSERT INTO escrows (job_id, employer_id, worker_id, hold_amount, material_hold_amount, status) VALUES ($1,$2,$3,$4,$5,\'held\')', [id, employer_id, worker_id, holdTotal - material, material]);
+      await queryRunner.query('INSERT INTO ledgers (user_id, job_id, type, amount, meta) VALUES ($1,$2,\'escrow_hold\',$3,$4)', [employer_id, id, -(holdTotal), JSON.stringify({note:'employer hold', labor, material})]);
+      await queryRunner.commitTransaction();
+      return up[0];
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async start(id: string) {

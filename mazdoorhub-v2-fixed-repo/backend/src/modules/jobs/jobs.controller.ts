@@ -6,7 +6,12 @@ import { PushService } from '../../integrations/push.service';
 
 @Controller('v1/jobs')
 export class JobsController {
-  constructor(private jobs: JobsService, private ds: DataSource, private push: PushService) {}
+  constructor(
+    private jobs: JobsService,
+    private ds: DataSource,
+    private push: PushService,
+    private redis: RedisService,
+  ) {}
 
   @Post() async create(@Body() body: any) { return this.jobs.create(body); }
 
@@ -39,9 +44,8 @@ export class JobsController {
   }
 
   @Post(':id/peek') async peek(@Param('id') id: string, @Body() body: { worker_id: string }) {
-    const redis = new RedisService();
-    const ok = await redis.softLockJob(id, body.worker_id, 90000);
-    const heldBy = ok ? body.worker_id : await redis.softLockInfo(id);
+    const ok = await this.redis.softLockJob(id, body.worker_id, 90000);
+    const heldBy = ok ? body.worker_id : await this.redis.softLockInfo(id);
     return { soft_hold: ok, held_by: heldBy };
   }
 }

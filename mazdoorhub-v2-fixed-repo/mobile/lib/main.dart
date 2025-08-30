@@ -49,7 +49,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final FlutterTts tts = FlutterTts(); bool speakHints=false;
-  String? jwt; String employerId="00000000-0000-0000-0000-000000000000"; String workerId="00000000-0000-0000-0000-000000000001";
+  String? jwt; String? employerId; String? workerId;
   List<Skill> skills=[]; Skill? selected;
   final titleCtrl = TextEditingController(text: "Plumber needed");
   double lat=24.8607, lon=67.0011; String? lastJobId; Timer? _pollTimer; Timer? heartbeatTimer; double? workerLat, workerLon; String? acceptedWorkerId; String? jobStatus;
@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> postJob() async {
-    if (selected==null) return;
+    if (selected==null || employerId==null) return;
     final r = await http.post(Uri.parse('$apiBase/v1/jobs'),
       headers:{'Content-Type':'application/json', if(jwt!=null) 'Authorization':'Bearer $jwt'},
       body: jsonEncode({"employer_id":employerId,"skill_id":selected!.id,"title":titleCtrl.text,"lat":lat,"lon":lon,"budget_type":"fixed","budget_amount":2500,"guarantee_min_pkr":2000})
@@ -127,6 +127,7 @@ class _HomePageState extends State<HomePage> {
     await http.patch(Uri.parse('$apiBase/v1/workers/$workerId/preferences'), headers:{'Content-Type':'application/json'}, body: jsonEncode(body));
   }
   Future<void> toggleAvailability() async {
+    if (workerId==null) return;
     available = !available; setState((){});
     await http.patch(Uri.parse('$apiBase/v1/workers/$workerId/availability'), headers:{'Content-Type':'application/json'}, body: jsonEncode({"availability": available}));
     if (speakHints) { await tts.speak(available? 'Available' : 'Unavailable'); }
@@ -152,6 +153,7 @@ class _HomePageState extends State<HomePage> {
   }
   Future<void> sendHeartbeat() async {
     final uid = widget.mode==Mode.worker? workerId : employerId;
+    if (uid==null) return;
     await http.post(Uri.parse('$apiBase/v1/devices/heartbeat'), headers:{'Content-Type':'application/json'}, body: jsonEncode({"user_id": uid, "platform":"flutter"}));
   }
 

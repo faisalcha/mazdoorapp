@@ -57,7 +57,16 @@ class _HomePageState extends State<HomePage> {
   bool available=false; final minRateCtrl = TextEditingController(text:"0"); final radiusCtrl = TextEditingController(text:"8");
 
   @override void initState(){ super.initState(); _loadSkills(); heartbeatTimer = Timer.periodic(const Duration(minutes:5), (_)=> sendHeartbeat()); }
-  @override void dispose(){ _pollTimer?.cancel(); heartbeatTimer?.cancel(); commentCtrl.dispose(); super.dispose(); }
+  @override void dispose(){
+    _pollTimer?.cancel();
+    heartbeatTimer?.cancel();
+    commentCtrl.dispose();
+    // Dispose controllers to free resources
+    titleCtrl.dispose();
+    minRateCtrl.dispose();
+    radiusCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _loadSkills() async {
     try { final r = await http.get(Uri.parse('$apiBase/v1/skills')); if(r.statusCode==200){ final List d=jsonDecode(r.body); setState(()=> skills = d.map((e)=>Skill.fromJson(e)).toList()); } } catch(_){}
